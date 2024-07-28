@@ -26,32 +26,33 @@ export const userSignup = async (
 ) => {
   const { name, email, password } = req.body;
   try {
-    const existingUser = User.findOne({ email });
-    if (!existingUser) {
-      const hashedPass = await hash(password, 10);
-      const user = new User({ name, email, password: hashedPass });
-      await user.save();
-
-      res.clearCookie(COOKIE_NAME, {
-        domain: "localhost",
-        httpOnly: true,
-        signed: true,
-        path: "/",
-      });
-      const token = createToken(user._id.toString(), email, "1d");
-
-      const expires = new Date();
-      expires.setDate(expires.getDate() + 1);
-      res.cookie(COOKIE_NAME, token, {
-        path: "/",
-        domain: "localhost",
-        expires,
-        httpOnly: true,
-        signed: true,
-      });
-      return res.status(200).json({ message: "OK", id: user._id.toString() });
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(401).send("User Already exists");
     }
-    return res.status(401).send("User Already exists");
+
+    const hashedPass = await hash(password, 10);
+    const user = new User({ name, email, password: hashedPass });
+    await user.save();
+
+    res.clearCookie(COOKIE_NAME, {
+      domain: "localhost",
+      httpOnly: true,
+      signed: true,
+      path: "/",
+    });
+    const token = createToken(user._id.toString(), email, "1d");
+
+    const expires = new Date();
+    expires.setDate(expires.getDate() + 1);
+    res.cookie(COOKIE_NAME, token, {
+      path: "/",
+      domain: "localhost",
+      expires,
+      httpOnly: true,
+      signed: true,
+    });
+    return res.status(200).json({ message: "OK", id: user._id.toString() });
   } catch (error) {
     // Handle errors appropriately
     console.error(error);
