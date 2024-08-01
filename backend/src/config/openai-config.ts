@@ -7,4 +7,5 @@ export const configureOpenAI = () => {
     apiKey: process.env.OPENAI_SECRET,
     organization: process.env.OPENAI_ORGANIZATION_ID,
   });
+  return config;
 };
