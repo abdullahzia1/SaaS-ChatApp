@@ -19,6 +19,7 @@ export const getAllUsers = async (
   }
 };
 
+// USER SIGNUP
 export const userSignup = async (
   req: Request,
   res: Response,
@@ -61,6 +62,8 @@ export const userSignup = async (
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+//User Login
 export const userLogin = async (
   req: Request,
   res: Response,
@@ -94,6 +97,32 @@ export const userLogin = async (
       httpOnly: true,
       signed: true,
     });
+    return res
+      .status(200)
+      .json({ message: "Ok", name: user.name, email: user.email });
+  } catch (error) {
+    // Handle errors appropriately
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const verifyUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const user = await User.findById({ email: res.locals.jwtData.id });
+    if (!user) {
+      return res
+        .status(401)
+        .send("User is not registered or Token Malfunctioned.");
+    }
+    if (user._id.toString() !== res.locals.jwtData.id) {
+      return res.status(401).send("Permissions did not match");
+    }
+
     return res
       .status(200)
       .json({ message: "Ok", name: user.name, email: user.email });
